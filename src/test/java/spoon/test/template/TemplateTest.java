@@ -48,6 +48,7 @@ import spoon.template.ExpressionTemplate;
 import spoon.template.Substitution;
 import spoon.template.TemplateMatcher;
 import spoon.template.TemplateParameter;
+import spoon.template.StatementTemplate;
 import spoon.test.template.testclasses.AnExpressionTemplate;
 import spoon.test.template.testclasses.AnotherFieldAccessTemplate;
 import spoon.test.template.testclasses.ArrayAccessTemplate;
@@ -83,6 +84,7 @@ import spoon.test.template.testclasses.logger.LoggerTemplateProcessor;
 import spoon.test.template.testclasses.types.AClassModel;
 import spoon.test.template.testclasses.types.AnEnumModel;
 import spoon.test.template.testclasses.types.AnIfaceModel;
+import spoon.test.template.testclasses.InsertAllFieldsTemplate;
 import spoon.testing.utils.ModelUtils;
 
 import java.io.File;
@@ -837,6 +839,28 @@ public class TemplateTest {
 		Set<CtMethod<?>> listMethods = cclass.getMethods();
 		assertEquals(0, cclass.getMethodsByName("apply").size());
 		assertEquals(4, listMethods.size());
+	}
+
+	@Test
+	public void testSubstitutionInsertAllFields() {
+		// contract: insertAllFields method of the Substitution class inserts all the fields from a given template by substituting all the template parameters by their values.
+
+		Launcher spoon = new Launcher();
+		spoon.addTemplateResource(new FileSystemFile("./src/test/java/spoon/test/template/testclasses/InsertAllFieldsTemplate.java"));
+
+		spoon.buildModel();
+		Factory factory = spoon.getFactory();
+
+		CtType<?> targetType = factory.Class().create("someClass");
+		StatementTemplate template = new InsertAllFieldsTemplate("someParameter");
+
+		Substitution.insertAllFields(targetType, template);
+
+		try {
+			assertEquals("testString", targetType.getFields().get(0).getSimpleName());
+		} catch (IndexOutOfBoundsException e) {
+			fail();
+		}
 	}
 
 	@Test
